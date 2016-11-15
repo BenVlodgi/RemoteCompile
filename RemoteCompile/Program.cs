@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using VMFParser;
 
 namespace RemoteCompile
 {
@@ -11,9 +12,13 @@ namespace RemoteCompile
     {
         static void Main(string[] args)
         {
-            var vmfPath = "";
-            var configPath = Path.Combine("<executing assembly file location>", "remotecompile.cfg");
-
+#if DEBUG
+            var vmfPath = @".\..\..\Tests\dev_room.vmf";
+            var configPath = @".\..\..\Tests\remotecompile.cfg";
+#else
+            var vmfPath = "path.vmf";
+            var configPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "remotecompile.cfg");
+#endif
             //TODO: Take parameter of map to compile
             //TODO: Take optional parameter of config file path
             //TODO: Load local config file, if it doesn't exist, create a default one
