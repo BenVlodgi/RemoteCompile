@@ -31,8 +31,17 @@ namespace RemoteCompile
             {
                 //TODO: Create default config
             }
+            
+            // Load VMF
+            if (!File.Exists(vmfPath))
+            {
+                // Early exit
+                Console.WriteLine("Map does not exist \"{0}\"", vmfPath);
+                return;
+            }
 
-            //TODO: Load VMF
+            var vmfFileContents = File.ReadAllLines(vmfPath);
+            var vmf = new VMF(vmfFileContents);
 
             //TODO: Recursively identify and load dependent instances
             //      Track instance dependency tree to recognize instance recursion
