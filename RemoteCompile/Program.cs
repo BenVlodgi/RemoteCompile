@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using VMFParser;
+using Config = VMFParser.VMF;
 
 namespace RemoteCompile
 {
@@ -24,7 +25,7 @@ namespace RemoteCompile
             //TODO: Take optional parameter of config file path
             //TODO: Load local config file, if it doesn't exist, create a default one
 
-            VMF config;
+            Config config;
             if (File.Exists(configPath))
             {
                 //TODO: Load config
@@ -32,8 +33,9 @@ namespace RemoteCompile
             else
             {
                 #region Create default config
-                config = new VMF();
-                config.Body.Add(new VBlock("RemoteCompileConfig", new List<IVNode>
+                config = new Config(new List<IVNode>
+                {
+                new VBlock("RemoteCompileConfig", new List<IVNode>
                 {
                     new VBlock("BuildServer", new List<IVNode>
                     {
@@ -62,7 +64,9 @@ namespace RemoteCompile
                    {
                        new VProperty("","")
                    })
-                }));
+                })});
+
+                File.WriteAllLines(configPath, config.ToVMFStrings());
                 #endregion
             }
             
