@@ -10,6 +10,7 @@ namespace RemoteCompile
 {
     class Program
     {
+
         static void Main(string[] args)
         {
 #if DEBUG
@@ -23,13 +24,46 @@ namespace RemoteCompile
             //TODO: Take optional parameter of config file path
             //TODO: Load local config file, if it doesn't exist, create a default one
 
+            VMF config;
             if (File.Exists(configPath))
             {
                 //TODO: Load config
             }
             else
             {
-                //TODO: Create default config
+                #region Create default config
+                config = new VMF();
+                config.Body.Add(new VBlock("RemoteCompileConfig", new List<IVNode>
+                {
+                    new VBlock("BuildServer", new List<IVNode>
+                    {
+                        new VProperty("Address","127.0.0.1")
+                       ,new VProperty("Port","9043")
+                       ,new VProperty("Username","")
+                       ,new VProperty("Password","")
+                       ,new VBlock("AuthLock",new List<IVNode>
+                       {
+                           new VProperty("Token","")
+                          ,new VProperty("Expires","")
+                       })
+                    })
+                   ,new VProperty("BuildTarget","Source SDK 2013")
+                   
+                   //TODO: Add all available VBSP, VVIS, VRAD parameters
+                   ,new VBlock("VBSP", new List<IVNode>
+                   {
+                       new VProperty("","")
+                   })
+                   ,new VBlock("VVIS", new List<IVNode>
+                   {
+                       new VProperty("","")
+                   })
+                   ,new VBlock("VRAD", new List<IVNode>
+                   {
+                       new VProperty("","")
+                   })
+                }));
+                #endregion
             }
             
             // Load VMF
