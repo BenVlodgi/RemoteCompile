@@ -22,6 +22,10 @@ namespace RemoteCompile
             var configPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "remotecompile.cfg");
 #endif
             //TODO: Take parameter of map to compile
+            //TODO: Take parameter of maps root path for instances
+            //      Temporarily use vmf location
+            var mapsRoot = Path.GetDirectoryName(vmfPath);
+
             //TODO: Take optional parameter of config file path
             //TODO: Load local config file, if it doesn't exist, create a default one
 
@@ -85,7 +89,7 @@ namespace RemoteCompile
             //      Track instance dependency tree to recognize instance recursion
             //      Only dig 100 levels deep unless otherwise specified in the config
             var instanceTree = new Dictionary<int, Tuple<string, List<int>>>();
-            BuildInstanceTree(instanceTree, 100, 0, vmf, vmfPath, BuildInstanceDictionaryKeyIndex++);
+            BuildInstanceTree(instanceTree, 100, 0, vmf, vmfPath, BuildInstanceDictionaryKeyIndex++, mapsRoot);
 
             //TODO: Make sure there is no recursion in the instanceTree
 
@@ -104,7 +108,7 @@ namespace RemoteCompile
         }
 
         static int BuildInstanceDictionaryKeyIndex = 0;
-        static void BuildInstanceTree(Dictionary<int, Tuple<string, List<int>>> tree, int maxDepth, int currentDepth, VMF vmf, string vmfPath, int currentID)
+        static void BuildInstanceTree(Dictionary<int, Tuple<string, List<int>>> tree, int maxDepth, int currentDepth, VMF vmf, string vmfPath, int currentID, string mapsRoot)
         {
             // Add entry
             var links = new List<int>();
@@ -121,10 +125,12 @@ namespace RemoteCompile
 
             foreach(var subInstancepath in subInstancePaths)
             {
+                // Clean subInstancePath and use absolute path
+                string subInstanceAbsolutePath = Path.Combine(mapsRoot, vmfPath).ToLower();
+
                 // Check if this instance path exists already in the dictionary, if it does set that to be the subInstanceID
                 int subInstanceID;
-                //TODO: Clean subInstancePath, and perhaps use absolute path
-                var existingEntry = tree.Values.Where(t => t.Item1 == subInstancepath).FirstOrDefault();
+                var existingEntry = tree.Values.Where(t => t.Item1 == subInstanceAbsolutePath).FirstOrDefault();
                 if (existingEntry != null)
                     subInstanceID = tree.Where(kvp => kvp.Value == existingEntry).FirstOrDefault().Key;
                 else
@@ -133,10 +139,6 @@ namespace RemoteCompile
                 // Add link from currentID to subInstanceID
                 if (!links.Contains(subInstanceID))
                     links.Add(subInstanceID);
-
-                //TODO: Get fixed filepath to load vmf
-                string subInstanceAbsolutePath = subInstancepath;
-
 
                 if (!File.Exists(subInstanceAbsolutePath))
                 {
@@ -150,7 +152,7 @@ namespace RemoteCompile
                 VMF subInstance = new VMF(File.ReadAllLines(subInstanceAbsolutePath));
 
                 // Recurse to get the rest of the instance tree
-                BuildInstanceTree(tree, maxDepth, currentDepth + 1, subInstance, subInstancepath, subInstanceID);
+                BuildInstanceTree(tree, maxDepth, currentDepth + 1, subInstance, subInstanceAbsolutePath, subInstanceID, mapsRoot);
             }
         }
     }
