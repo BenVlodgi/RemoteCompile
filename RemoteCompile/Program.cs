@@ -107,7 +107,8 @@ namespace RemoteCompile
         static void BuildInstanceTree(Dictionary<int, Tuple<string, List<int>>> tree, int maxDepth, int currentDepth, VMF vmf, string vmfPath, int currentID)
         {
             // Add entry
-            tree.Add(currentID, Tuple.Create(vmfPath, new List<int>()));
+            var links = new List<int>();
+            tree.Add(currentID, Tuple.Create(vmfPath, links));
 
             if (currentDepth > maxDepth)
                 return;
@@ -128,8 +129,10 @@ namespace RemoteCompile
                     subInstanceID = tree.Where(kvp => kvp.Value == existingEntry).FirstOrDefault().Key;
                 else
                     subInstanceID = BuildInstanceDictionaryKeyIndex++;
-                
-                //TODO: Add links from currentID to subInstanceID
+
+                // Add link from currentID to subInstanceID
+                if (!links.Contains(subInstanceID))
+                    links.Add(subInstanceID);
 
                 //TODO: Get fixed filepath to load vmf
                 string subInstanceAbsolutePath = subInstancepath;
