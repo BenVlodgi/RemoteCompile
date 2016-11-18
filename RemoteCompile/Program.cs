@@ -84,6 +84,10 @@ namespace RemoteCompile
             //TODO: Recursively identify and load dependent instances
             //      Track instance dependency tree to recognize instance recursion
             //      Only dig 100 levels deep unless otherwise specified in the config
+            var instanceTree = new Dictionary<int, Tuple<string, List<int>>>();
+            BuildInstanceTree(instanceTree, 100, 0, vmf, vmfPath, BuildInstanceDictionaryKeyIndex++);
+
+            //TODO: Make sure there is no recursion in the instanceTree
 
             //TODO: Request hashes of all dependent resources from server.
             //      Compare results to local copies.
@@ -97,6 +101,54 @@ namespace RemoteCompile
             //TODO: Spin off waiting thread for server to execute OnCompleteBuild commands
             //      This could include: downloading the map, and running the game
 
+        }
+
+        static int BuildInstanceDictionaryKeyIndex = 0;
+        static void BuildInstanceTree(Dictionary<int, Tuple<string, List<int>>> tree, int maxDepth, int currentDepth, VMF vmf, string vmfPath, int currentID)
+        {
+            // Add entry
+            tree.Add(currentID, Tuple.Create(vmfPath, new List<int>()));
+
+            if (currentDepth > maxDepth)
+                return;
+
+            // Identify subInstances
+            var subInstancePaths = vmf.Body
+                .Where(node => node.Name == "entity" && node is VBlock && (node as VBlock).HasPropertyWithKeyValue("classname", "func_instance"))
+                .Cast<VBlock>()
+                .Select(instance=>instance.GetPropertyWithKey("file").Value);
+
+            foreach(var subInstancepath in subInstancePaths)
+            {
+                // Check if this instance path exists already in the dictionary, if it does set that to be the subInstanceID
+                int subInstanceID;
+                //TODO: Clean subInstancePath, and perhaps use absolute path
+                var existingEntry = tree.Values.Where(t => t.Item1 == subInstancepath).FirstOrDefault();
+                if (existingEntry != null)
+                    subInstanceID = tree.Where(kvp => kvp.Value == existingEntry).FirstOrDefault().Key;
+                else
+                    subInstanceID = BuildInstanceDictionaryKeyIndex++;
+                
+                //TODO: Add links from currentID to subInstanceID
+
+                //TODO: Get fixed filepath to load vmf
+                string subInstanceAbsolutePath = subInstancepath;
+
+
+                if (!File.Exists(subInstanceAbsolutePath))
+                {
+                    // Handle missing instance file
+                    Console.WriteLine("file not found: \"{0}\"", subInstanceAbsolutePath);
+                    throw new Exception("Missing Instance");
+                    //TODO: Create unique exception
+                }
+
+                // Load instance
+                VMF subInstance = new VMF(File.ReadAllLines(subInstanceAbsolutePath));
+
+                // Recurse to get the rest of the instance tree
+                BuildInstanceTree(tree, maxDepth, currentDepth + 1, subInstance, subInstancepath, subInstanceID);
+            }
         }
     }
 }
