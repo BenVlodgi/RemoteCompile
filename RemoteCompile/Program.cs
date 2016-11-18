@@ -85,9 +85,9 @@ namespace RemoteCompile
             var vmfFileContents = File.ReadAllLines(vmfPath);
             var vmf = new VMF(vmfFileContents);
 
-            //TODO: Recursively identify and load dependent instances
-            //      Track instance dependency tree to recognize instance recursion
-            //      Only dig 100 levels deep unless otherwise specified in the config
+            // Recursively identify and load dependent instances
+            // Track instance dependency tree to recognize instance recursion
+            // Only dig 100 levels deep unless otherwise specified in the config
             var instanceTree = new Dictionary<int, Tuple<string, List<int>>>();
             BuildInstanceTree(instanceTree, 100, 0, vmf, vmfPath, BuildInstanceDictionaryKeyIndex++, mapsRoot);
 
