@@ -140,9 +140,9 @@ namespace RemoteCompile
                 if (!links.Contains(subInstanceID))
                     links.Add(subInstanceID);
 
+                // Handle when instance file doesn't exist
                 if (!File.Exists(subInstanceAbsolutePath))
                 {
-                    // Handle missing instance file
                     Console.WriteLine("file not found: \"{0}\"", subInstanceAbsolutePath);
                     throw new Exception("Missing Instance");
                     //TODO: Create unique exception
