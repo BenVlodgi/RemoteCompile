@@ -15,8 +15,8 @@ namespace RemoteCompile
         static void Main(string[] args)
         {
 #if DEBUG
-            var vmfPath = @".\..\..\Tests\dev_room.vmf";
-            var configPath = @".\..\..\Tests\remotecompile.cfg";
+            var vmfPath = Path.GetFullPath(@".\..\..\Tests\dev_room.vmf");
+            var configPath = Path.GetFullPath(@".\..\..\Tests\remotecompile.cfg");
 #else
             var vmfPath = "path.vmf";
             var configPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "remotecompile.cfg");
@@ -126,7 +126,7 @@ namespace RemoteCompile
             foreach(var subInstancepath in subInstancePaths)
             {
                 // Clean subInstancePath and use absolute path
-                string subInstanceAbsolutePath = Path.Combine(mapsRoot, vmfPath).ToLower();
+                string subInstanceAbsolutePath = Path.Combine(mapsRoot, subInstancepath).ToLower();
 
                 // Check if this instance path exists already in the dictionary, if it does set that to be the subInstanceID
                 int subInstanceID;
